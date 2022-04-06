@@ -1,31 +1,45 @@
 import './App.css';
 import Movie from "./Movie";
 import PageWrapper from "./PageWrapper";
-import MoviesJson from './movies.json';
 import Pagination from "./Pagination";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 
 function App() {
 
     const [currentPage, setCurrentPage] = useState(1);
+    const [movies, setMovies] = useState([]);
     const MOVIES_PER_PAGE = 4;
-    let movies = MoviesJson;
 
-    const loadMovies = () => {
-        movies = movies.slice((currentPage - 1) * MOVIES_PER_PAGE, currentPage * MOVIES_PER_PAGE);
+    useEffect( () => {
+        loadMovies();
+    }, []);
+
+    const loadMovies = async () => {
+        let url = "https://cors-anywhere.herokuapp.com/https://lucasmoy.dev/data/react/peliculas.json";
+        let response = await fetch(url, {
+                "method" : "GET",
+                //"mode" : "no-cors",
+                "headers" : {
+                    "Access-Control-Allow-Origin": "*",
+                    "Accept" : 'application/json',
+                    "Content-Type": 'application/json',
+                    "Origin": 'https://lucasmoy.dev'
+                }
+        });
+        let json = await response.json();
+        setMovies(json);
     };
 
     const getTotalPages = () => {
-        let amountMovies = MoviesJson.length;
+        let amountMovies = movies.length;
         return Math.ceil( amountMovies / MOVIES_PER_PAGE);
-    }
+    };
 
-    loadMovies();
+    let moviesInPage = movies.slice((currentPage - 1) * MOVIES_PER_PAGE, currentPage * MOVIES_PER_PAGE);
 
   return (
       <PageWrapper>
-
-          {movies.map(movie =>
+          {moviesInPage.map(movie =>
              <Movie title={movie.title} rating={movie.rating}
                     director={movie.director} actors={movie.actors}
                     year={movie.year} duration={movie.duration} img={movie.img}>
